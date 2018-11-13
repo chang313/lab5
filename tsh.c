@@ -299,24 +299,24 @@ int builtin_cmd(char **argv)
 void do_bgfg(char **argv) 
 {
     struct job_t *job;
-    char *tmp;
+    char *temp;
     int jid;
     pid_t pid;
 
-    tmp = argv[1];
+    temp = argv[1];
 
-    if (tmp == NULL) {
+    if (temp == NULL) {
         printf("%s command requires PID or %%jobid argument\n", argv[0]);
         return;
 
     }
 
     /* if get a jid */
-    if (tmp[0] == '%') {
-        jid = atoi(&tmp[1]);
+    if (temp[0] == '%') {
+        jid = atoi(&temp[1]);
         job = getjobjid(jobs, jid);
         if (job == NULL) {
-            printf("%s: No such job\n", tmp); 
+            printf("%s: No such job\n", temp); 
             return;
         } else {
             pid = job->pid;
@@ -324,8 +324,8 @@ void do_bgfg(char **argv)
     }
 
     /* if get a pid */
-    else if (isdigit(tmp[0])) {
-        pid = atoi(tmp);
+    else if (isdigit(temp[0])) {
+        pid = atoi(temp);
         job = getjobpid(jobs,pid);
         if (job == NULL) {
             printf("(%d): No such process\n", pid);
@@ -381,19 +381,19 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig) 
 {    
-    int status;
+    int stat;
     pid_t pid;
 
-    while ((pid = waitpid(fgpid(jobs), &status, WNOHANG|WUNTRACED)) > 0) {
-        if (WIFSTOPPED(status)) {
+    while ((pid = waitpid(fgpid(jobs), &stat, WNOHANG|WUNTRACED)) > 0) {
+        if (WIFSTOPPED(stat)) {
             getjobpid(jobs, pid)->state = ST;
             int jid = pid2jid(pid);
-            printf("Job [%d] (%d) Stopped by signal %d\n", jid, pid, WSTOPSIG(status));
-        } else if (WIFSIGNALED(status)) {
+            printf("Job [%d] (%d) Stopped by signal %d\n", jid, pid, WSTOPSIG(stat));
+        } else if (WIFSIGNALED(stat)) {
             int jid = pid2jid(pid);
-            printf(" JOB [%d] (%d) terminated by signal %d\n", jid, pid, WTERMSIG(status));
+            printf(" JOB [%d] (%d) terminated by signal %d\n", jid, pid, WTERMSIG(stat));
             deletejob(jobs,pid);
-        } else if (WIFEXITED(status)) {
+        } else if (WIFEXITED(stat)) {
             deletejob(jobs,pid);
         }
     }
